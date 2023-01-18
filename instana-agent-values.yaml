@@ -1,0 +1,29 @@
+agent:
+  configuration_yaml: |
+      com.instana.plugin.postgresql:
+        user: 'ffs'
+        password: 'ffs'
+
+      com.instana.plugin.javatrace:
+        instrumentation:
+          enabled: false
+
+      com.instana.plugin.python:
+        autotrace:
+          enabled: false
+
+      com.instana.plugin.php:
+        tracing:
+          enabled: false  
+      
+      com.instana.plugin.opentelemetry:
+        enabled: true
+
+      com.instana.ignore:
+        arguments:
+          - '-javaagent:/opt/otel/opentelemetry-javaagent-all.jar'
+
+      com.instana.tracing:
+        extra-http-headers:
+          - traceparent
+          - tracestate

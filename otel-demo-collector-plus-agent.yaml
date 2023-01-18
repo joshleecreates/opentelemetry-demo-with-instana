@@ -1,0 +1,31 @@
+default:
+  image:
+    repository: joshuamlee/otel-demo-instana
+opentelemetry-collector:
+  config:
+    exporters:
+      otlp/2:
+        endpoint: instana-agent.instana-agent:4317
+        tls:
+          insecure: true
+    service:
+      pipelines:
+        traces:
+          exporters: [otlp, otlp/2, logging]
+
+components:
+  featureflagService:
+    imageOverride:
+      repository: otel/demo
+  paymentService:
+    resources:
+      limits:
+        memory: 170Mi
+  checkoutService:
+    resources:
+      limits:
+        memory: 50Mi
+  kafka:
+    resources:
+      limits:
+        memory: 1200Mi

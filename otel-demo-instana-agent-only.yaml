@@ -1,0 +1,77 @@
+default:
+  image:
+    repository: joshuamlee/otel-demo-instana
+
+observability:
+  otelcol:
+    enabled: false
+  jaeger:
+    enabled: false
+  prometheus:
+    enabled: false
+  grafana:
+    enabled: false
+  instana:
+    endpoint: http://instana-agent.instana-agent.svc.cluster.local:4317
+
+components:
+  adService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  cartService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  checkoutService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+    resources:
+      limits:
+        memory: 50Mi
+  currencyService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  emailService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  featureflagService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  ffsPostgres:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  paymentService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+    resources:
+      limits:
+        memory: 170Mi
+  productCatalogService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  recommendationService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  shippingService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  quoteService:
+    env:
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: '{{ include observability.instana.endpoint }}'
+  kafka:
+    resources:
+      limits:
+        memory: 1200Mi
+
+
