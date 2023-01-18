@@ -1,7 +1,9 @@
 default:
   image:
     repository: joshuamlee/otel-demo-instana
-
+  envOverrides:
+    - name: OTEL_EXPORTER_OTLP_ENDPOINT
+      value: http://instana-agent.instana-agent.svc.cluster.local:4317
 observability:
   otelcol:
     enabled: false
@@ -11,64 +13,158 @@ observability:
     enabled: false
   grafana:
     enabled: false
-  instana:
-    endpoint: http://instana-agent.instana-agent.svc.cluster.local:4317
 
 components:
   adService:
     env:
+      - name: AD_SERVICE_PORT
+        value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   cartService:
     env:
+      - name: ASPNETCORE_URLS
+        value: http://*:8080
+      - name: REDIS_ADDR
+        value: '{{ include "otel-demo.name" . }}-redis:6379'
+      - name: CART_SERVICE_PORT
+        value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   checkoutService:
     env:
+      - name: CART_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-cartservice:8080'
+      - name: CURRENCY_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-currencyservice:8080'
+      - name: PAYMENT_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-paymentservice:8080'
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
+      - name: SHIPPING_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-shippingservice:8080'
+      - name: EMAIL_SERVICE_ADDR
+        value: 'http://{{ include "otel-demo.name" . }}-emailservice:8080'
+      - name: CHECKOUT_SERVICE_PORT
+        value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
+      - name: KAFKA_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-kafka:9092'
     resources:
       limits:
         memory: 50Mi
   currencyService:
     env:
+      - name: PORT
+        value: "8080"
+      - name: CURRENCY_SERVICE_PORT
+        value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   emailService:
     env:
+      - name: APP_ENV
+        value: production
+      - name: PORT
+        value: "8080"
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: 'http://instana-agent.instana-agent.svc.cluster.local:4318/v1/traces'
+      - name: EMAIL_SERVICE_PORT
+        value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   featureflagService:
+    imageOverride:
+      repository: otel/demo
     env:
+      - name: FEATURE_FLAG_GRPC_SERVICE_PORT
+        value: "50053"
+      - name: FEATURE_FLAG_SERVICE_PORT
+        value: "8081"
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: grpc
+      - name: DATABASE_URL
+        value: 'ecto://ffs:ffs@{{ include "otel-demo.name" . }}-ffspostgres:5432/ffs'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   ffsPostgres:
     env:
+      - name: POSTGRES_DB
+        value: ffs
+      - name: POSTGRES_PASSWORD
+        value: ffs
+      - name: POSTGRES_USER
+        value: ffs
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
-  paymentService:
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
+  frauddetectionService:
     env:
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
+      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+        value: cumulative
+      - name: KAFKA_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-kafka:9092'
+  paymentService:
+    env:
+      - name: PAYMENT_SERVICE_PORT
+        value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
+      - name: KAFKA_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-kafka:9092'
     resources:
       limits:
         memory: 170Mi
   productCatalogService:
     env:
+      - name: PRODUCT_CATALOG_SERVICE_PORT
+        value: "8080"
+      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   recommendationService:
     env:
+      - name: OTEL_PYTHON_LOG_CORRELATION
+        value: "true"
+      - name: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python
+      - name: FEATURE_FLAG_GRPC_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-featureflagservice:50053'
+      - name: RECOMMENDATION_SERVICE_PORT
+        value: "8080"
+      - name: PRODUCT_CATALOG_SERVICE_ADDR
+        value: '{{ include "otel-demo.name" . }}-productcatalogservice:8080'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   shippingService:
     env:
+      - name: PORT
+        value: "8080"
+      - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+        value: 'http://instana-agent.instana-agent.svc.cluster.local:4317'
+      - name: SHIPPING_SERVICE_PORT
+        value: "8080"
+      - name: QUOTE_SERVICE_ADDR
+        value: 'http://{{ include "otel-demo.name" . }}-quoteservice:8080'
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   quoteService:
     env:
+      - name: OTEL_TRACES_SAMPLER
+        value: "parentbased_always_on"
+      - name: OTEL_TRACES_EXPORTER
+        value: "otlp"
+      - name: OTEL_EXPORTER_OTLP_TRACES_PROTOCOL
+        value: "grpc"
+      - name: OTEL_PHP_TRACES_PROCESSOR
+        value: "simple"
+      - name: QUOTE_SERVICE_PORT
+        value: "8080"
       - name: OTEL_EXPORTER_OTLP_ENDPOINT
-        value: '{{ include observability.instana.endpoint }}'
+        value: http://instana-agent.instana-agent.svc.cluster.local:4317
   kafka:
     resources:
       limits:
