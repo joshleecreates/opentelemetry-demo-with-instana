@@ -8,8 +8,8 @@ helm install instana-agent \
    --set agent.downloadKey=$INSTANA_DOWNLOAD_KEY \
    --set agent.endpointHost=$INSTANA_ENDPOINT_HOST \
    --set agent.endpointPort=443 \
-   --set cluster.name='otel-demo' \
-   --set zone.name='otel-demo' \
+   --set cluster.name=$1 \
+   --set zone.name=$1 \
    --set service.create=true \
    --set opentelemetry.enabled=true \
    --values instana-agent-values.yaml \
